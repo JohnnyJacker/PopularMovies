@@ -11,6 +11,9 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 
 public class DetailActivityFragment extends Fragment {
 
@@ -19,6 +22,18 @@ public class DetailActivityFragment extends Fragment {
 
     private Context mContext;
 
+    @Bind(R.id.title_text_view)
+    TextView mTitle;
+    @Bind(R.id.overview_text_view)
+    TextView mOverview;
+    @Bind(R.id.releasedate_text_view)
+    TextView mRelease;
+    @Bind(R.id.rating_text_view)
+    TextView mRating;
+    @Bind(R.id.imageView)
+    ImageView mThumbnail;
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -26,31 +41,30 @@ public class DetailActivityFragment extends Fragment {
 
         View rootview = inflater.inflate(R.layout.fragment_detail, container, false);
 
+        ButterKnife.bind(this, rootview);
+
 
         String movie_title = getActivity().getIntent().getExtras().getString("movie_title");
-        TextView tv1 = (TextView) rootview.findViewById(R.id.title_text_view);
-        tv1.setText(movie_title);
-
         String movie_overview = getActivity().getIntent().getExtras().getString("movie_overview");
-        TextView tv2 = (TextView) rootview.findViewById(R.id.overview_text_view);
-        tv2.setText(movie_overview);
-
         String movie_releasedate = getActivity().getIntent().getExtras().getString("movie_releasedate");
-        TextView tv3 = (TextView) rootview.findViewById(R.id.releasedate_text_view);
-        tv3.setText(movie_releasedate);
-
         String movie_rating = getActivity().getIntent().getExtras().getString("movie_rating");
-        TextView tv4 = (TextView) rootview.findViewById(R.id.rating_text_view);
-        tv4.setText(movie_rating + "/10");
-
         String movie_thumbnail = getActivity().getIntent().getExtras().getString("movie_thumbnail");
-        ImageView thumbnail = (ImageView) rootview.findViewById(R.id.imageView);
+
+
+        mTitle.setText(movie_title);
+
+        mOverview.setText(movie_overview);
+
+        mRelease.setText(movie_releasedate);
+
+        mRating.setText(movie_rating + "/10");
+
         Picasso.with(mContext)
                 .load(movie_thumbnail)
                 .resize(185, 256)
                 .centerInside()
                 .placeholder(R.drawable.noimage)
-                .into(thumbnail);
+                .into(mThumbnail);
 
 
         return rootview;
