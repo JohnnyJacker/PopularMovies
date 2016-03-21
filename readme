@@ -1,0 +1,1 @@
+API key numbers should be copied inside the quotes (TheMovieDatabaseApiKey="api key goes here") within the gradle.properties file
