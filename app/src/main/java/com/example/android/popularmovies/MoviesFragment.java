@@ -19,16 +19,16 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import cz.msebera.android.httpclient.Header;
 
 
-public class PopularMoviesFragment extends Fragment {
+public class MoviesFragment extends Fragment {
 
 
-    public PopularMoviesFragment() {
+    public MoviesFragment() {
     }
 
 
     GridView gridview;
     Response responseObj;
-    GridViewAdapter adapter;
+    MoviesGVAdapter adapter;
     Gson gson;
     AsyncHttpClient client;
 
@@ -37,14 +37,17 @@ public class PopularMoviesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+// All this method does to update the movies is call parseJson();
         updateMovies();
 
-
+// The layout to inflate
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+// The gridview to inflate
         gridview = (GridView) rootView.findViewById(R.id.gridview_movies);
 
-
+// OnItemClickListener for when a movie is clicked it gets the position clicked.
+// Then it gets the info and starts an intent to send the info to
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -75,6 +78,7 @@ public class PopularMoviesFragment extends Fragment {
 
     }
 
+
     @Override
     public void onResume() {
         super.onResume();
@@ -84,15 +88,17 @@ public class PopularMoviesFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-//        updateMovies();
     }
 
+
+    // Created this method to make it more clear for when I need to update the movies
     public void updateMovies() {
-
         parseJson();
-
     }
 
+
+    // This method is used within the parseJson();
+    // Passes the built URL in for GSON library
     public String builtURL() {
 
         String MOVIE_BASE_URL =
@@ -114,6 +120,7 @@ public class PopularMoviesFragment extends Fragment {
 
         String url = builtUri.toString();
 
+        // This is the built url for when the app calls on the server for the grid of movies
         return url;
     }
 
@@ -128,7 +135,7 @@ public class PopularMoviesFragment extends Fragment {
                 String responseStr = new String(responseBody);
                 gson = new Gson();
                 responseObj = gson.fromJson(responseStr, Response.class);
-                adapter = new GridViewAdapter(getActivity(), responseObj.getResults());
+                adapter = new MoviesGVAdapter(getActivity(), responseObj.getResults());
                 gridview.setAdapter(adapter);
             }
 

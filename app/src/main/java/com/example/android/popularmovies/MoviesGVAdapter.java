@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Created by T510 Owner on 1/16/2016.
  */
-public class GridViewAdapter extends BaseAdapter {
+public class MoviesGVAdapter extends BaseAdapter {
 
 
     private List<Response.movieEntity> mMovieitem;
@@ -22,7 +22,7 @@ public class GridViewAdapter extends BaseAdapter {
     private LayoutInflater inflater;
 
 
-    public GridViewAdapter(Context mContext, List<Response.movieEntity> mMovieitem) {
+    public MoviesGVAdapter(Context mContext, List<Response.movieEntity> mMovieitem) {
         this.mContext = mContext;
         this.mMovieitem = mMovieitem;
     }

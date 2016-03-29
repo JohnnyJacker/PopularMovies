@@ -15,9 +15,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 
-public class DetailActivityFragment extends Fragment {
+public class DetailFragment extends Fragment {
 
-    public DetailActivityFragment() {
+    public DetailFragment() {
     }
 
     private Context mContext;
