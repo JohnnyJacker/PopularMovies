@@ -1,5 +1,6 @@
 package com.example.android.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -49,6 +50,8 @@ public class DetailFragment extends Fragment {
         String movie_releasedate = getActivity().getIntent().getExtras().getString("movie_releasedate");
         String movie_rating = getActivity().getIntent().getExtras().getString("movie_rating");
         String movie_thumbnail = getActivity().getIntent().getExtras().getString("movie_thumbnail");
+
+
 
 
         mTitle.setText(movie_title);

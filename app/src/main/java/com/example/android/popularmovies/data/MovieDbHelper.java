@@ -18,9 +18,11 @@ package com.example.android.popularmovies.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.widget.ImageView;
 
+import com.example.android.popularmovies.data.MovieContract.FavoriteEntry;
 import com.example.android.popularmovies.data.MovieContract.MovieEntry;
+import com.example.android.popularmovies.data.MovieContract.ReviewEntry;
+import com.example.android.popularmovies.data.MovieContract.TrailerEntry;
 
 /**
  * Manages a local database for movie data.
@@ -30,11 +32,14 @@ public class MovieDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
     private static final int DATABASE_VERSION = 2;
 
+    // Name of actual database file name
     static final String DATABASE_NAME = "movie.db";
 
     public MovieDbHelper(Context context) {
+        // These values get passed into the constructor to initialize the database
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
+
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
@@ -42,16 +47,54 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
                 MovieEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 MovieEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_RELEASE + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_RATING + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_OVERVIEW + " TEXT NOT NULL," +
                 MovieEntry.COLUMN_IMAGE_PATH + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_TRAILERS + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_REVIEWS + " TEXT NOT NULL, " +
-                MovieEntry.COLUMN_FAVORITE + " TEXT NOT NULL " +
+                MovieEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
+                MovieEntry.COLUMN_RELEASE + " TEXT NOT NULL," +
+                MovieEntry.COLUMN_RATING + " TEXT NOT NULL, " +
+                MovieEntry.COLUMN_MOVIE_ID + " TEXT NOT NULL, " +
+
+                " FOREIGN KEY (" + MovieEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
+                TrailerEntry.TABLE_NAME + " (" + TrailerEntry.COLUMN_MOVIE_ID + "), " +
+
+                " FOREIGN KEY (" + MovieEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
+                ReviewEntry.TABLE_NAME + " (" + ReviewEntry.COLUMN_MOVIE_ID + "), " +
+
+                " FOREIGN KEY (" + MovieEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
+                FavoriteEntry.TABLE_NAME + " (" + FavoriteEntry.COLUMN_MOVIE_ID + ") " +
+
+                " );";
+
+        final String SQL_CREATE_TRAILER_TABLE = "CREATE TABLE " + MovieContract.TrailerEntry.TABLE_NAME + " (" +
+
+                TrailerEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                TrailerEntry.COLUMN_MOVIE_ID + " TEXT UNIQUE NOT NULL, " +
+                TrailerEntry.COLUMN_TRAILER_KEY + " TEXT NOT NULL " +
+
+
+                " );";
+
+        final String SQL_CREATE_REVIEW_TABLE = "CREATE TABLE " + MovieContract.ReviewEntry.TABLE_NAME + " (" +
+
+                ReviewEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                ReviewEntry.COLUMN_MOVIE_ID + " TEXT UNIQUE NOT NULL, " +
+                ReviewEntry.COLUMN_AUTHOR + " TEXT NOT NULL, " +
+                ReviewEntry.COLUMN_REVIEW + " TEXT NOT NULL " +
+
+
+                " );";
+
+        final String SQL_CREATE_FAVORITES_TABLE = "CREATE TABLE " + MovieContract.FavoriteEntry.TABLE_NAME + " (" +
+
+                FavoriteEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                FavoriteEntry.COLUMN_MOVIE_ID + " TEXT UNIQUE NOT NULL " +
+
+
                 " );";
 
         sqLiteDatabase.execSQL(SQL_CREATE_MOVIE_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_TRAILER_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_REVIEW_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_FAVORITES_TABLE);
     }
 
     @Override
@@ -64,6 +107,9 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         // should be your top priority before modifying this method.
 
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TrailerEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + ReviewEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + FavoriteEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }

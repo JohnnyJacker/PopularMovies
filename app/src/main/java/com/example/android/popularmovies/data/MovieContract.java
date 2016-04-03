@@ -37,14 +37,17 @@ public class MovieContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     // Possible paths (appended to base content URI for possible URI's)
-
-
+    //  Base paths for the URIs they match the names of the tables
     public static final String PATH_MOVIE = "movie";
+    public static final String PATH_TRAILER = "trailer";
+    public static final String PATH_REVIEW = "review";
+    public static final String PATH_FAVORITE = "favorite";
 
 
     /* Inner class that defines the contents of the movie table */
     public static final class MovieEntry implements BaseColumns {
 
+        // This represents the base location for each table
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_MOVIE).build();
 
         public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
@@ -72,15 +75,94 @@ public class MovieContract {
         public static final String COLUMN_IMAGE_PATH = "image_path";
 
         // Name of the trailer column in the movie table
-        public static final String COLUMN_TRAILERS = "trailer";
+        public static final String COLUMN_MOVIE_ID = "movie_id";
 
-        // Name of the reviews column in the movie table
-        public static final String COLUMN_REVIEWS = "reviews";
 
-        // Name of the favorite column in the movie table
-        public static final String COLUMN_FAVORITE = "favorite";
-
+        // This function helps build the content provider queries
+        // Makes fewer places in the code aware of actual URI encoding
         public static Uri buildMovieUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+    }
+
+    /* Inner class that defines the contents of the trailer table */
+    public static final class TrailerEntry implements BaseColumns {
+
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRAILER).build();
+
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PATH_TRAILER;
+
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PATH_TRAILER;
+
+        // Name of the trailer table
+        public static final String TABLE_NAME = "trailer";
+
+        // Name of the title column in the movie table
+        public static final String COLUMN_MOVIE_ID = "movie_id";
+
+        // Name of the release date column in the movie table
+        public static final String COLUMN_TRAILER_KEY = "trailer_key";
+
+
+        public static Uri buildTrailerUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+    }
+
+    /* Inner class that defines the contents of the review table */
+    public static final class ReviewEntry implements BaseColumns {
+
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_REVIEW).build();
+
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PATH_REVIEW;
+
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PATH_REVIEW;
+
+        // Name of the trailer table
+        public static final String TABLE_NAME = "review";
+
+        // Name of the title column in the movie table
+        public static final String COLUMN_MOVIE_ID = "movie_id";
+
+        // Name of the release date column in the movie table
+        public static final String COLUMN_AUTHOR = "author";
+
+        // Name of the title column in the movie table
+        public static final String COLUMN_REVIEW = "review";
+
+
+
+        public static Uri buildReviewUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+    }
+
+    /* Inner class that defines the contents of the review table */
+    public static final class FavoriteEntry implements BaseColumns {
+
+        public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon().appendPath(PATH_FAVORITE).build();
+
+        public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PATH_FAVORITE;
+
+        public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" +
+                CONTENT_AUTHORITY + "/" + PATH_FAVORITE;
+
+        // Name of the trailer table
+        public static final String TABLE_NAME = "favorite";
+
+        // Name of the title column in the movie table
+        public static final String COLUMN_MOVIE_ID = "movie_id";
+
+
+        public static Uri buildFavoriteUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
