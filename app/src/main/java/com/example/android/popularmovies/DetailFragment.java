@@ -22,8 +22,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.popularmovies.data.MovieContract;
-import com.example.android.popularmovies.data.MovieDbHelper;
-import com.example.android.popularmovies.data.MovieProvider;
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -48,6 +46,7 @@ public class DetailFragment extends Fragment {
 
     public DetailFragment() {
     }
+
     Boolean flag = false;
     TrailerResponse videoResponseObj;
     ReviewResponse reviewResponseObj;
@@ -55,15 +54,13 @@ public class DetailFragment extends Fragment {
     AsyncHttpClient client;
     TrailerLVAdapter adapter;
     ListView trailerListView;
-    TextView listview1;
-    MovieProvider mp;
+    ListView reviewListView;
     String trailerURL;
     String reviewURL;
     String movie_id;
 
     String trailerResponseStr;
     String reviewResponseStr;
-    int pstn;
     Context mContext;
 
     @Bind(R.id.title_text_view)
@@ -87,9 +84,12 @@ public class DetailFragment extends Fragment {
 
         trailerListView = (ListView) rootview.findViewById(R.id.trailerListView);
 
-        listview1 = (TextView) rootview.findViewById(R.id.review_text_view);
+        reviewListView = (ListView) rootview.findViewById(R.id.review_list_view);
 
 
+/**
+ * OnItemClickListener for the trailer listview
+ */
         trailerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -126,8 +126,6 @@ public class DetailFragment extends Fragment {
         final String movie_thumbnail = getActivity().getIntent().getExtras().getString("movie_thumbnail");
 
 
-
-
         mTitle.setText(movie_title);
 
         mOverview.setText(movie_overview);
@@ -147,7 +145,7 @@ public class DetailFragment extends Fragment {
 
         final ImageView star = (ImageView) rootview.findViewById(R.id.imageButton);
 
-        // TODO: Change the following code to make it go through the content provider
+
         if (flag == checkForMovie(movie_id)) {
             star.setImageResource(android.R.drawable.star_big_off);
             flag = true;
@@ -157,12 +155,15 @@ public class DetailFragment extends Fragment {
             flag = false;
         }
 
+        /**
+         * On click listener for the favorite star
+         */
         star.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
 
-                deleteFavoriteFromProvider(movie_id);
+                deleteFavoriteMovie(movie_id);
 
                 if (flag == checkForMovie(movie_id)) {
 
@@ -181,9 +182,8 @@ public class DetailFragment extends Fragment {
 //                    getReviews();
 
 
-//                    db.insertItem(movie_title, movie_thumbnail, movie_overview, movie_releasedate,
-//                            movie_rating, movie_id, trailerURL, reviewURL);
-
+                    //  Here is where you are inserting values into
+                    // the database using the content provider into the movie table
                     ContentValues testMovieValues = createMovieValues(movie_title, movie_thumbnail, movie_overview, movie_releasedate,
                             movie_rating, movie_id);
 
@@ -199,7 +199,7 @@ public class DetailFragment extends Fragment {
                     long movieRowId = ContentUris.parseId(movieUri);
 
                     assertTrue(movieRowId != -1);
-//
+//TODO:  Figure out why this won't validate
 //                    Cursor cursorMovie = getContext().getContentResolver().query(
 //                            MovieContract.MovieEntry.CONTENT_URI,
 //                            null, // leaving "columns" null just returns all the columns.
@@ -215,7 +215,8 @@ public class DetailFragment extends Fragment {
 //                    // End of inserting data into the movie table
 
 
-
+                    //  Here is where you are inserting values into
+                    // the database using the content provider into the movie table
                     ContentValues testFavoriteValues = createFavoriteValues(movie_id);
 
                     TestContentObserver favoriteTco = getTestContentObserver();
@@ -230,7 +231,7 @@ public class DetailFragment extends Fragment {
                     long favoriteRowId = ContentUris.parseId(favoriteUri);
 
                     assertTrue(favoriteRowId != -1);
-//
+//TODO:  Figure out why this won't validate
 //                    Cursor cursorFavorite = getContext().getContentResolver().query(
 //                            MovieContract.FavoriteEntry.CONTENT_URI,
 //                            null, // leaving "columns" null just returns all the columns.
@@ -243,7 +244,6 @@ public class DetailFragment extends Fragment {
 //                            cursorFavorite, testFavoriteValues);
 //
 //                    testFavoriteValues.putAll(testFavoriteValues);
-
 
 
                     star.setImageResource(android.R.drawable.star_big_on);
@@ -259,8 +259,17 @@ public class DetailFragment extends Fragment {
         return rootview;
     }
 
+    /**
+     * @param title     title of the movie
+     * @param imagePath image path for the movie poster
+     * @param overview  movie overview
+     * @param release   movie release date
+     * @param rating    movie rating
+     * @param movie_id  movie id assigned by the movies database TMDB
+     * @return returns testMovieValues ContentValues
+     */
     static ContentValues createMovieValues(String title, String imagePath, String overview, String release,
-    String rating, String movie_id) {
+                                           String rating, String movie_id) {
 
         ContentValues testMovieValues = new ContentValues();
         testMovieValues.put(MovieContract.MovieEntry.COLUMN_TITLE, title);
@@ -272,7 +281,7 @@ public class DetailFragment extends Fragment {
 
         return testMovieValues;
     }
-
+//TODO:  Uncomment this when you are ready to insert values into the trailer table
 //    static ContentValues createTrailerValues(String movie_id, String trailerKey) {
 //
 //        ContentValues testTrailerValues = new ContentValues();
@@ -284,6 +293,12 @@ public class DetailFragment extends Fragment {
 //        return testTrailerValues;
 //    }
 
+    //TODO:  Create createReviewValues here
+
+    /**
+     * @param movie_id movie id assigned by the movies database TMDB
+     * @return returns testFavoriteValues ContentValues
+     */
     static ContentValues createFavoriteValues(String movie_id) {
 
         ContentValues testFavoriteValues = new ContentValues();
@@ -292,6 +307,9 @@ public class DetailFragment extends Fragment {
         return testFavoriteValues;
     }
 
+    /**
+     * This only gets the first trailer I don't think I really need this
+     */
     public void getFirstTrailer() {
 
 
@@ -309,6 +327,7 @@ public class DetailFragment extends Fragment {
 
     }
 
+    //TODO:  Call this when you are ready to get the trailers
     public void getTrailers() {
 
 
@@ -320,6 +339,7 @@ public class DetailFragment extends Fragment {
 
     }
 
+    //TODO:  Call this when you are ready to get the reviews
     public void getReviews() {
 
         for (int i = 0; i < adapter.getCount(); i++) {
@@ -347,47 +367,57 @@ public class DetailFragment extends Fragment {
         parseReviewJson();
     }
 
-    public void deleteFavoriteFromProvider(String movie_id) {
+    //  This method deletes a favorite movie
+    //  Deletes data from all four tables
+    //TODO:  Modify this to include the remaining two tables trailer and review
 
-//        String whereClause = KEY_MOVIEID + "=" + movieId;
-        String whereClause = MovieContract.FavoriteEntry.COLUMN_MOVIE_ID + "=" + movie_id;
-
-        getContext().getContentResolver().delete(
-                MovieContract.FavoriteEntry.CONTENT_URI,
-                whereClause,
-                null
-        );
-
-        Cursor cursor = getContext().getContentResolver().query(
-                MovieContract.FavoriteEntry.CONTENT_URI,
-                null,
-                null,
-                null,
-                null
-        );
-        assertEquals("Error: Records not deleted from Favorite table during delete", cursor.getCount(), cursor.getCount());
-        cursor.close();
+    /**
+     * @param movie_id takes in a movie_id to delete all data from all tables if it's a favorite
+     */
+    public void deleteFavoriteMovie(String movie_id) {
 
 
-
-        //        String whereClause = KEY_MOVIEID + "=" + movieId;
-        String whereClause1 = MovieContract.MovieEntry.COLUMN_MOVIE_ID + "=" + movie_id;
-
+        //  This is the where clause that looks for the movie_id in the movie_id column
+        String movieWhereClause = MovieContract.MovieEntry.COLUMN_MOVIE_ID + "=" + movie_id;
+        //  This is getting the content resolver to delete from the movie table
         getContext().getContentResolver().delete(
                 MovieContract.MovieEntry.CONTENT_URI,
-                whereClause1,
+                movieWhereClause,
                 null
         );
 
-        Cursor cursor1 = getContext().getContentResolver().query(
+        Cursor movieCursor = getContext().getContentResolver().query(
                 MovieContract.MovieEntry.CONTENT_URI,
                 null,
                 null,
                 null,
                 null
         );
-        assertEquals("Error: Records not deleted from Favorite table during delete", cursor1.getCount(), cursor1.getCount());
-        cursor1.close();
+        assertEquals("Error: Records not deleted from Favorite table during delete", movieCursor.getCount(), movieCursor.getCount());
+        movieCursor.close();
+
+        //TODO:  Add the other two tables right inbetween the movieWhereClause and the favoriteWhereClause
+
+
+        String favoriteWhereClause = MovieContract.FavoriteEntry.COLUMN_MOVIE_ID + "=" + movie_id;
+
+        getContext().getContentResolver().delete(
+                MovieContract.FavoriteEntry.CONTENT_URI,
+                favoriteWhereClause,
+                null
+        );
+
+        Cursor favoriteCursor = getContext().getContentResolver().query(
+                MovieContract.FavoriteEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+        assertEquals("Error: Records not deleted from Favorite table during delete", favoriteCursor.getCount(), favoriteCursor.getCount());
+        favoriteCursor.close();
+
+
     }
 
     /**
@@ -432,6 +462,9 @@ public class DetailFragment extends Fragment {
     }
 
 
+    /**
+     * This parses the JSON for the trailers
+     */
     public void parseTrailerJson() {
 
         client = new AsyncHttpClient();
@@ -455,7 +488,9 @@ public class DetailFragment extends Fragment {
         });
     }
 
-
+    /**
+     * This parses the JSON data for the reviews
+     */
     public void parseReviewJson() {
 
         client = new AsyncHttpClient();
@@ -481,12 +516,11 @@ public class DetailFragment extends Fragment {
         });
     }
 
-    public boolean checkForMovie(String movieId){
-
-
-
-//        Cursor cursor = mp.query(MovieContract.FavoriteEntry.TABLE_NAME, null, "movieid=?", new String[]{movieId}, null, null, null);
-
+    /**
+     * @param movieId Takes in a movie_id to check if the movie already exists in the favorits table
+     * @return returns true if movie id exists and false if movie id does not exist
+     */
+    public boolean checkForMovie(String movieId) {
 
         Cursor movieCursor = getContext().getContentResolver().query(
                 MovieContract.FavoriteEntry.CONTENT_URI,
@@ -496,15 +530,20 @@ public class DetailFragment extends Fragment {
                 null
         );
 
-        boolean existing=false;
-        while(movieCursor.moveToNext()){
-            existing=true;
+        boolean existing = false;
+        while (movieCursor.moveToNext()) {
+            existing = true;
         }
         movieCursor.close();
         return existing;
     }
 
 
+    //TODO:  You need to understand what this really does because it was taken from Sunshine
+
+    /**
+     * This was from Sunshine
+     */
     static class TestContentObserver extends ContentObserver {
         final HandlerThread mHT;
         boolean mContentChanged;
@@ -550,6 +589,10 @@ public class DetailFragment extends Fragment {
         return TestContentObserver.getTestContentObserver();
     }
 
+    /**
+     * This was also from Sunshine
+     */
+    //TODO:  You need to understand what this does too because it was also taken from Sunshine
     public abstract static class PollingCheck {
         private static final long TIME_SLICE = 50;
         private long mTimeout = 3000;
@@ -602,12 +645,23 @@ public class DetailFragment extends Fragment {
     }
 
 
+    /**
+     * @param error          Takes in an error message
+     * @param valueCursor    Takes in the value of the cursor
+     * @param expectedValues Takes in the expected values
+     */
+    //TODO:  This is not working for some reason you need to figure this out!
     static void validateCursor(String error, Cursor valueCursor, ContentValues expectedValues) {
         assertTrue("Empty cursor returned. " + error, valueCursor.moveToFirst());
         validateCurrentRecord(error, valueCursor, expectedValues);
         valueCursor.close();
     }
 
+    /**
+     * @param error          Takes in an error message
+     * @param valueCursor    Takes in the value of the cursor
+     * @param expectedValues Takes in the expected values
+     */
     static void validateCurrentRecord(String error, Cursor valueCursor, ContentValues expectedValues) {
         Set<Map.Entry<String, Object>> valueSet = expectedValues.valueSet();
         for (Map.Entry<String, Object> entry : valueSet) {

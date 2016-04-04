@@ -176,12 +176,11 @@
                 android:layout_marginLeft="16dp"
                 android:layout_marginTop="8dp"/>
 
-            <TextView
-                android:id="@+id/review_text_view"
+            <ListView
+                android:id="@+id/review_list_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="16dp"
-                android:text="This is the review section!  You should probably show sonmething here  because if you don't people won't know how good you thought the movie was.  It also helps for testing purposes when creating layouts for android applications."
                 android:layout_marginTop="36dp"
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"/>
