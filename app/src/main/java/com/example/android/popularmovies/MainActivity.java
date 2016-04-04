@@ -15,13 +15,11 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.SimpleCursorAdapter;
 
 import com.example.android.popularmovies.data.MovieContract;
 import com.example.android.popularmovies.data.MovieDbHelper;
 
 import junit.framework.Assert;
-import junit.framework.Test;
 
 import java.util.Map;
 import java.util.Set;
@@ -34,15 +32,13 @@ import static junit.framework.Assert.assertTrue;
 
 public class MainActivity extends AppCompatActivity {
 
+
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-
-
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -55,46 +51,7 @@ public class MainActivity extends AppCompatActivity {
         testInsertTrailer();
         testInsertReview();
         testInsertFavorite();
-        testInsertMovie();
-        testInsertTrailer();
-        testInsertReview();
-        testInsertFavorite();
-        testInsertMovie();
-        testInsertTrailer();
-        testInsertReview();
-        testInsertFavorite();
-        testInsertMovie();
-        testInsertTrailer();
-        testInsertReview();
-        testInsertFavorite();
-        testInsertMovie();
-        testInsertTrailer();
-        testInsertReview();
-        testInsertFavorite();
         testCursorTables();
-        testDeleteRecords();
-
-
-//        testDeleteRecords();
-//        testCursorTables();
-
-//        testUpdateRecords();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     }
 
@@ -360,7 +317,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d("Testing Favorite Entry", DatabaseUtils.dumpCursorToString(favoriteCursor));
 
     }
-
 
 
     public void deleteAllRecordsFromProvider() {
