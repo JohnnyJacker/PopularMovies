@@ -21,6 +21,7 @@ import com.example.android.popularmovies.data.MovieContract;
 import com.example.android.popularmovies.data.MovieDbHelper;
 
 import junit.framework.Assert;
+import junit.framework.Test;
 
 import java.util.Map;
 import java.util.Set;
@@ -33,34 +34,179 @@ import static junit.framework.Assert.assertTrue;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String LOG_TAG = MainActivity.class.getSimpleName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
 
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Getting reference to writable database
         MovieDbHelper dbHelper = new MovieDbHelper(this);
         dbHelper.getReadableDatabase();
 
+        testInsertMovie();
+        testInsertTrailer();
+        testInsertReview();
+        testInsertFavorite();
+        testInsertMovie();
+        testInsertTrailer();
+        testInsertReview();
+        testInsertFavorite();
+        testInsertMovie();
+        testInsertTrailer();
+        testInsertReview();
+        testInsertFavorite();
+        testInsertMovie();
+        testInsertTrailer();
+        testInsertReview();
+        testInsertFavorite();
+        testInsertMovie();
+        testInsertTrailer();
+        testInsertReview();
+        testInsertFavorite();
+        testCursorTables();
+        testDeleteRecords();
+
+
+//        testDeleteRecords();
+//        testCursorTables();
+
+//        testUpdateRecords();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+    public void testUpdateRecords() {
+
+        //        // Test out updating the tables
+        ContentValues movieUpdateValues = createMovieValues();
+
+        Uri movieUpdateUri = this.getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, movieUpdateValues);
+
+       long movieUpdateRowId = ContentUris.parseId(movieUpdateUri);
+
+        assertTrue(movieUpdateRowId != -1);
+        Log.d(LOG_TAG, "New row id: " + movieUpdateRowId);
+
+        ContentValues updatedMovieValues = new ContentValues(movieUpdateValues);
+        updatedMovieValues.put(MovieContract.MovieEntry._ID, movieUpdateRowId);
+        updatedMovieValues.put(MovieContract.MovieEntry.COLUMN_TITLE, "The Revenant");
+        updatedMovieValues.put(MovieContract.MovieEntry.COLUMN_IMAGE_PATH, "This is supposed to be an image path");
+        updatedMovieValues.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, "This is the new overview");
+        updatedMovieValues.put(MovieContract.MovieEntry.COLUMN_RELEASE, "New Release Date");
+        updatedMovieValues.put(MovieContract.MovieEntry.COLUMN_RATING, "New Rating");
+        updatedMovieValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, "New Movie ID");
+
+        Cursor movieUpdateCursor = this.getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI,
+                null, null, null, null);
+
+        TestContentObserver updateMovieTco = getTestContentObserver();
+        movieUpdateCursor.registerContentObserver(updateMovieTco);
+
+        int count = this.getContentResolver().update(MovieContract.MovieEntry.CONTENT_URI, updatedMovieValues,
+                MovieContract.MovieEntry._ID + "= ?", new String[] {Long.toString(movieUpdateRowId)});
+
+        assertEquals(count, 1);
+
+        updateMovieTco.waitForNotificationOrFail();
+        movieUpdateCursor.unregisterContentObserver(updateMovieTco);
+        movieUpdateCursor.close();
+
+        Cursor cursor = this.getContentResolver().query(
+                MovieContract.MovieEntry.CONTENT_URI,
+                null,
+                MovieContract.MovieEntry._ID + " = " + movieUpdateRowId,
+                null,
+                null
+        );
+
+        validateCursor("testUpdateMovie.  Error validating movie entry update", cursor, updatedMovieValues);
+
+        cursor.close();
+        // End of updating the movie database test
+
+
+        // Test the basic content provider query for the movie table
+        Cursor movieTestCursor = this.getContentResolver().query(
+                MovieContract.MovieEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+
+        Log.d("Testing Movie Entry", DatabaseUtils.dumpCursorToString(movieTestCursor));
+
+    }
+
+    public void testDeleteRecords() {
+
+        TestContentObserver movieObserver = getTestContentObserver();
+        this.getContentResolver().registerContentObserver(MovieContract.MovieEntry.CONTENT_URI, true, movieObserver);
+
+        TestContentObserver trailerObserver = getTestContentObserver();
+        this.getContentResolver().registerContentObserver(MovieContract.TrailerEntry.CONTENT_URI, true, trailerObserver);
+
+        TestContentObserver reviewObserver = getTestContentObserver();
+        this.getContentResolver().registerContentObserver(MovieContract.ReviewEntry.CONTENT_URI, true, reviewObserver);
+
+        TestContentObserver favoriteObserver = getTestContentObserver();
+        this.getContentResolver().registerContentObserver(MovieContract.FavoriteEntry.CONTENT_URI, true, favoriteObserver);
+
+        deleteAllRecordsFromProvider();
+
+        movieObserver.waitForNotificationOrFail();
+        trailerObserver.waitForNotificationOrFail();
+        reviewObserver.waitForNotificationOrFail();
+        favoriteObserver.waitForNotificationOrFail();
+
+        this.getContentResolver().unregisterContentObserver(movieObserver);
+        this.getContentResolver().unregisterContentObserver(trailerObserver);
+        this.getContentResolver().unregisterContentObserver(reviewObserver);
+        this.getContentResolver().unregisterContentObserver(favoriteObserver);
+    }
+
+    public void testInsertMovie() {
+
+        //  Testing inserting data into the movie table
         ContentValues testMovieValues = createMovieValues();
 
-        TestContentObserver tco = getTestContentObserver();
-        this.getContentResolver().registerContentObserver(MovieContract.MovieEntry.CONTENT_URI, true, tco);
+        TestContentObserver movieTco = getTestContentObserver();
+        this.getContentResolver().registerContentObserver(MovieContract.MovieEntry.CONTENT_URI, true, movieTco);
 
 
         Uri movieUri = this.getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, testMovieValues);
 
-        tco.waitForNotificationOrFail();
-        this.getContentResolver().unregisterContentObserver(tco);
+        movieTco.waitForNotificationOrFail();
+        this.getContentResolver().unregisterContentObserver(movieTco);
 
         long movieRowId = ContentUris.parseId(movieUri);
 
         assertTrue(movieRowId != -1);
 
-        Cursor cursor = this.getContentResolver().query(
+        Cursor cursorMovie = this.getContentResolver().query(
                 MovieContract.MovieEntry.CONTENT_URI,
                 null, // leaving "columns" null just returns all the columns.
                 null, // cols for "where" clause
@@ -69,12 +215,110 @@ public class MainActivity extends AppCompatActivity {
         );
 
         validateCursor("testInsertReadProvider. Error validating MovieEntry.",
-                cursor, testMovieValues);
+                cursorMovie, testMovieValues);
 
         testMovieValues.putAll(testMovieValues);
+        // End of inserting data into the movie table
+
+    }
+
+    public void testInsertTrailer() {
+        // Testing inserting data into the trailer table
+        ContentValues testTrailerValues = createTrailerValues();
+
+        TestContentObserver trailerTco = getTestContentObserver();
+        this.getContentResolver().registerContentObserver(MovieContract.TrailerEntry.CONTENT_URI, true, trailerTco);
 
 
-        // Test the basic content provider query
+        Uri trailerUri = this.getContentResolver().insert(MovieContract.TrailerEntry.CONTENT_URI, testTrailerValues);
+
+        trailerTco.waitForNotificationOrFail();
+        this.getContentResolver().unregisterContentObserver(trailerTco);
+
+        long trailerRowId = ContentUris.parseId(trailerUri);
+
+        assertTrue(trailerRowId != -1);
+
+        Cursor cursorTrailer = this.getContentResolver().query(
+                MovieContract.TrailerEntry.CONTENT_URI,
+                null, // leaving "columns" null just returns all the columns.
+                null, // cols for "where" clause
+                null, // values for "where" clause
+                null  // sort order
+        );
+
+        validateCursor("testInsertReadProvider. Error validating TrailerEntry.",
+                cursorTrailer, testTrailerValues);
+
+        testTrailerValues.putAll(testTrailerValues);
+        // End of inserting data into the trailer table
+    }
+    public void testInsertReview() {
+        // Testing inserting data into the review table
+        ContentValues testReviewValues = createReviewValues();
+
+        TestContentObserver reviewTco = getTestContentObserver();
+        this.getContentResolver().registerContentObserver(MovieContract.ReviewEntry.CONTENT_URI, true, reviewTco);
+
+
+        Uri reviewUri = this.getContentResolver().insert(MovieContract.ReviewEntry.CONTENT_URI, testReviewValues);
+
+        reviewTco.waitForNotificationOrFail();
+        this.getContentResolver().unregisterContentObserver(reviewTco);
+
+        long reviewRowId = ContentUris.parseId(reviewUri);
+
+        assertTrue(reviewRowId != -1);
+
+        Cursor cursorReview = this.getContentResolver().query(
+                MovieContract.ReviewEntry.CONTENT_URI,
+                null, // leaving "columns" null just returns all the columns.
+                null, // cols for "where" clause
+                null, // values for "where" clause
+                null  // sort order
+        );
+
+        validateCursor("testInsertReadProvider. Error validating ReviewEntry.",
+                cursorReview, testReviewValues);
+
+        testReviewValues.putAll(testReviewValues);
+        // End of inserting data into the Review table
+    }
+    public void testInsertFavorite() {
+        // Testing inserting data into the favorite table
+        ContentValues testFavoriteValues = createFavoriteValues();
+
+        TestContentObserver favoriteTco = getTestContentObserver();
+        this.getContentResolver().registerContentObserver(MovieContract.FavoriteEntry.CONTENT_URI, true, favoriteTco);
+
+
+        Uri favoriteUri = this.getContentResolver().insert(MovieContract.FavoriteEntry.CONTENT_URI, testFavoriteValues);
+
+        favoriteTco.waitForNotificationOrFail();
+        this.getContentResolver().unregisterContentObserver(favoriteTco);
+
+        long favoriteRowId = ContentUris.parseId(favoriteUri);
+
+        assertTrue(favoriteRowId != -1);
+
+        Cursor cursorFavorite = this.getContentResolver().query(
+                MovieContract.FavoriteEntry.CONTENT_URI,
+                null, // leaving "columns" null just returns all the columns.
+                null, // cols for "where" clause
+                null, // values for "where" clause
+                null  // sort order
+        );
+
+        validateCursor("testInsertReadProvider. Error validating FavoriteEntry.",
+                cursorFavorite, testFavoriteValues);
+
+        testFavoriteValues.putAll(testFavoriteValues);
+        // End of inserting data into the favorite table
+    }
+
+    public void testCursorTables() {
+
+        // Test the basic content provider query for the movie table
         Cursor movieCursor = this.getContentResolver().query(
                 MovieContract.MovieEntry.CONTENT_URI,
                 null,
@@ -82,45 +326,104 @@ public class MainActivity extends AppCompatActivity {
                 null,
                 null
         );
-//
-//        // Test the basic content provider query
-//        Cursor trailerCursor = this.getContentResolver().query(
-//                MovieContract.TrailerEntry.CONTENT_URI,
-//                null,
-//                null,
-//                null,
-//                null
-//        );
-//
-//        // Test the basic content provider query
-//        Cursor reviewCursor = this.getContentResolver().query(
-//                MovieContract.ReviewEntry.CONTENT_URI,
-//                null,
-//                null,
-//                null,
-//                null
-//        );
-//
-//        // Test the basic content provider query
-//        Cursor favoriteCursor = this.getContentResolver().query(
-//                MovieContract.FavoriteEntry.CONTENT_URI,
-//                null,
-//                null,
-//                null,
-//                null
-//        );
-//
+
+        // Test the basic content provider query for the trailer table
+        Cursor trailerCursor = this.getContentResolver().query(
+                MovieContract.TrailerEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+
+        // Test the basic content provider query for the review table
+        Cursor reviewCursor = this.getContentResolver().query(
+                MovieContract.ReviewEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+
+        // Test the basic content provider query for the favorite table
+        Cursor favoriteCursor = this.getContentResolver().query(
+                MovieContract.FavoriteEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+
         Log.d("Testing Movie Entry", DatabaseUtils.dumpCursorToString(movieCursor));
-//        Log.d("Testing Trailer Entry", DatabaseUtils.dumpCursorToString(trailerCursor));
-//        Log.d("Testing Review Entry", DatabaseUtils.dumpCursorToString(reviewCursor));
-//        Log.d("Testing Favorite Entry", DatabaseUtils.dumpCursorToString(favoriteCursor));
+        Log.d("Testing Trailer Entry", DatabaseUtils.dumpCursorToString(trailerCursor));
+        Log.d("Testing Review Entry", DatabaseUtils.dumpCursorToString(reviewCursor));
+        Log.d("Testing Favorite Entry", DatabaseUtils.dumpCursorToString(favoriteCursor));
+
+    }
 
 
 
+    public void deleteAllRecordsFromProvider() {
+        this.getContentResolver().delete(
+                MovieContract.MovieEntry.CONTENT_URI,
+                null,
+                null
+        );
+        this.getContentResolver().delete(
+                MovieContract.TrailerEntry.CONTENT_URI,
+                null,
+                null
+        );
+        this.getContentResolver().delete(
+                MovieContract.ReviewEntry.CONTENT_URI,
+                null,
+                null
+        );
+        this.getContentResolver().delete(
+                MovieContract.FavoriteEntry.CONTENT_URI,
+                null,
+                null
+        );
 
+        Cursor cursor = this.getContentResolver().query(
+                MovieContract.MovieEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+        assertEquals("Error: Records not deleted from Movie table during delete", 0, cursor.getCount());
+        cursor.close();
 
+        cursor = this.getContentResolver().query(
+                MovieContract.TrailerEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+        assertEquals("Error: Records not deleted from Trailer table during delete", 0, cursor.getCount());
+        cursor.close();
 
+        cursor = this.getContentResolver().query(
+                MovieContract.ReviewEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+        assertEquals("Error: Records not deleted from Review table during delete", 0, cursor.getCount());
+        cursor.close();
 
+        cursor = this.getContentResolver().query(
+                MovieContract.FavoriteEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+        assertEquals("Error: Records not deleted from Favorite table during delete", 0, cursor.getCount());
+        cursor.close();
     }
 
     static class TestContentObserver extends ContentObserver {
@@ -255,6 +558,51 @@ public class MainActivity extends AppCompatActivity {
 
 
         return testMovieValues;
+    }
+
+        static ContentValues createTrailerValues() {
+
+
+
+        ContentValues testTrailerValues = new ContentValues();
+
+        testTrailerValues.put(MovieContract.TrailerEntry.COLUMN_MOVIE_ID, "385497");
+        testTrailerValues.put(MovieContract.TrailerEntry.COLUMN_TRAILER_KEY, "https://www.youtube.com/watch?v=xK7PbujRUOk");
+
+
+        return testTrailerValues;
+    }
+
+    static ContentValues createReviewValues() {
+
+
+
+        ContentValues testReviewValues = new ContentValues();
+
+        testReviewValues.put(MovieContract.ReviewEntry.COLUMN_MOVIE_ID, "385497");
+        testReviewValues.put(MovieContract.ReviewEntry.COLUMN_AUTHOR, "Christopher Paris");
+        testReviewValues.put(MovieContract.ReviewEntry.COLUMN_REVIEW, "This is one of my favorite films ever." +
+        "It has everything a proper James Bond film should have.  Right from the very beginning" +
+                "people are being chased and shot at in an adrenaline filled intro." +
+                "Bond song is best in history of bond movies.  Love it and highly recommend it to anybody that" +
+                "has not had the pleasure.");
+
+
+        return testReviewValues;
+    }
+
+    static ContentValues createFavoriteValues() {
+
+
+
+        ContentValues testFavoriteValues = new ContentValues();
+
+        testFavoriteValues.put(MovieContract.FavoriteEntry.COLUMN_MOVIE_ID, "385497");
+
+
+
+
+        return testFavoriteValues;
     }
 
     @Override

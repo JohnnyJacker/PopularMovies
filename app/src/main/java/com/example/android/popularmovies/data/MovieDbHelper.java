@@ -67,7 +67,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_TRAILER_TABLE = "CREATE TABLE " + MovieContract.TrailerEntry.TABLE_NAME + " (" +
 
                 TrailerEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                TrailerEntry.COLUMN_MOVIE_ID + " TEXT UNIQUE NOT NULL, " +
+                TrailerEntry.COLUMN_MOVIE_ID + " TEXT NOT NULL, " +
                 TrailerEntry.COLUMN_TRAILER_KEY + " TEXT NOT NULL " +
 
 
@@ -76,7 +76,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_REVIEW_TABLE = "CREATE TABLE " + MovieContract.ReviewEntry.TABLE_NAME + " (" +
 
                 ReviewEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                ReviewEntry.COLUMN_MOVIE_ID + " TEXT UNIQUE NOT NULL, " +
+                ReviewEntry.COLUMN_MOVIE_ID + " TEXT NOT NULL, " +
                 ReviewEntry.COLUMN_AUTHOR + " TEXT NOT NULL, " +
                 ReviewEntry.COLUMN_REVIEW + " TEXT NOT NULL " +
 
@@ -86,7 +86,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_FAVORITES_TABLE = "CREATE TABLE " + MovieContract.FavoriteEntry.TABLE_NAME + " (" +
 
                 FavoriteEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                FavoriteEntry.COLUMN_MOVIE_ID + " TEXT UNIQUE NOT NULL " +
+                FavoriteEntry.COLUMN_MOVIE_ID + " TEXT NOT NULL " +
 
 
                 " );";
