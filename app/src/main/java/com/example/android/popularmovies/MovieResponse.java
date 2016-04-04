@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by T510 Owner on 1/16/2016.
  */
-public class Response {
+public class MovieResponse {
 
 
     /**
@@ -160,8 +160,8 @@ public class Response {
             return release_date;
         }
 
-        public int getId() {
-            return id;
+        public String getId() {
+            return String.valueOf(id);
         }
 
         public String getOriginal_title() {

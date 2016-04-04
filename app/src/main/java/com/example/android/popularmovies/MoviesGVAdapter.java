@@ -17,12 +17,12 @@ import java.util.List;
 public class MoviesGVAdapter extends BaseAdapter {
 
 
-    private List<Response.movieEntity> mMovieitem;
+    private List<MovieResponse.movieEntity> mMovieitem;
     private Context mContext;
     private LayoutInflater inflater;
 
 
-    public MoviesGVAdapter(Context mContext, List<Response.movieEntity> mMovieitem) {
+    public MoviesGVAdapter(Context mContext, List<MovieResponse.movieEntity> mMovieitem) {
         this.mContext = mContext;
         this.mMovieitem = mMovieitem;
     }
@@ -49,7 +49,7 @@ public class MoviesGVAdapter extends BaseAdapter {
         LayoutInflater inflater = (LayoutInflater) mContext
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(R.layout.movie_item, parent, false);
-        Response.movieEntity item = (Response.movieEntity) getItem(position);
+        MovieResponse.movieEntity item = (MovieResponse.movieEntity) getItem(position);
 
         ImageView thumbnail = (ImageView) rowView.findViewById(R.id.movie_image);
 

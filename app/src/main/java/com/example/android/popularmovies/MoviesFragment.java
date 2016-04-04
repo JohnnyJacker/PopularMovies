@@ -27,7 +27,7 @@ public class MoviesFragment extends Fragment {
 
 
     GridView gridview;
-    Response responseObj;
+    MovieResponse responseObj;
     MoviesGVAdapter adapter;
     Gson gson;
     AsyncHttpClient client;
@@ -53,13 +53,14 @@ public class MoviesFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
 
-                Response.movieEntity item = (Response.movieEntity) adapter.getItem(position);
+                MovieResponse.movieEntity item = (MovieResponse.movieEntity) adapter.getItem(position);
 
                 String movieTitle = item.getTitle();
                 String movieThumbnail = item.getPoster_path();
                 String movieOverview = item.getOverview();
                 String movieReleaseDate = item.getRelease_date();
                 String movieRating = item.getVote_average();
+                String movieId = item.getId();
 
 
                 Intent i = new Intent(getActivity(), MovieDetail.class);
@@ -68,6 +69,7 @@ public class MoviesFragment extends Fragment {
                 i.putExtra("movie_overview", String.valueOf(movieOverview));
                 i.putExtra("movie_releasedate", String.valueOf(movieReleaseDate));
                 i.putExtra("movie_rating", String.valueOf(movieRating));
+                i.putExtra("movie_id", String.valueOf(movieId));
                 startActivity(i);
 
             }
@@ -134,7 +136,7 @@ public class MoviesFragment extends Fragment {
 
                 String responseStr = new String(responseBody);
                 gson = new Gson();
-                responseObj = gson.fromJson(responseStr, Response.class);
+                responseObj = gson.fromJson(responseStr, MovieResponse.class);
                 adapter = new MoviesGVAdapter(getActivity(), responseObj.getResults());
                 gridview.setAdapter(adapter);
             }
