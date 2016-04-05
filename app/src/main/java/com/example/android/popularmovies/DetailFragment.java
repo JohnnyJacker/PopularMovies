@@ -52,7 +52,7 @@ public class DetailFragment extends Fragment {
     ReviewResponse reviewResponseObj;
     Gson gson;
     AsyncHttpClient client;
-    TrailerLVAdapter adapter;
+    TrailerLVAdapter trailerLVAdapter;
     ListView trailerListView;
     ListView reviewListView;
     String trailerURL;
@@ -63,6 +63,8 @@ public class DetailFragment extends Fragment {
     String reviewResponseStr;
     Context mContext;
 
+
+    //  These bind the views to the member variables
     @Bind(R.id.title_text_view)
     TextView mTitle;
     @Bind(R.id.overview_text_view)
@@ -84,7 +86,10 @@ public class DetailFragment extends Fragment {
 
         trailerListView = (ListView) rootview.findViewById(R.id.trailerListView);
 
-        reviewListView = (ListView) rootview.findViewById(R.id.review_list_view);
+
+        //  Not doing anything with the reviews list view  yet, may not even use a listview depending
+        //  on how the data is presented and how I feel about it
+//        reviewListView = (ListView) rootview.findViewById(R.id.review_list_view);
 
 
 /**
@@ -94,26 +99,12 @@ public class DetailFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-
-                TrailerResponse.ResultsEntity item = (TrailerResponse.ResultsEntity) adapter.getItem(position);
-
-
-                String videoKey;
-                videoKey = item.getKey();
-
-                trailerURL = "https://www.youtube.com/watch?v=" + videoKey;
-
-                Log.d("Log Message!!!", trailerURL);
-
+                getTrailerAtPosition(position);
 
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(trailerURL));
                 startActivity(i);
-
-
             }
-
-
         });
 
         ButterKnife.bind(this, rootview);
@@ -126,6 +117,7 @@ public class DetailFragment extends Fragment {
         final String movie_thumbnail = getActivity().getIntent().getExtras().getString("movie_thumbnail");
 
 
+        //  Setting the text for the movie title from the passed in values from MoviesFragment
         mTitle.setText(movie_title);
 
         mOverview.setText(movie_overview);
@@ -145,11 +137,12 @@ public class DetailFragment extends Fragment {
 
         final ImageView star = (ImageView) rootview.findViewById(R.id.imageButton);
 
-
+        //  Flag is set to false initially
+        //  If the movie id returns false the image is off and the flag gets set to true
         if (flag == checkForMovie(movie_id)) {
             star.setImageResource(android.R.drawable.star_big_off);
             flag = true;
-
+            //  If the movie id returns true then the star is on and the flag is again set to false.
         } else {
             star.setImageResource(android.R.drawable.star_big_on);
             flag = false;
@@ -176,12 +169,6 @@ public class DetailFragment extends Fragment {
 
                 } else {
 
-
-                    getFirstTrailer();
-//                    getTrailers();
-//                    getReviews();
-
-
                     //  Here is where you are inserting values into
                     // the database using the content provider into the movie table
                     ContentValues testMovieValues = createMovieValues(movie_title, movie_thumbnail, movie_overview, movie_releasedate,
@@ -199,24 +186,26 @@ public class DetailFragment extends Fragment {
                     long movieRowId = ContentUris.parseId(movieUri);
 
                     assertTrue(movieRowId != -1);
-//TODO:  Figure out why this won't validate
-//                    Cursor cursorMovie = getContext().getContentResolver().query(
-//                            MovieContract.MovieEntry.CONTENT_URI,
-//                            null, // leaving "columns" null just returns all the columns.
-//                            null, // cols for "where" clause
-//                            null, // values for "where" clause
-//                            null  // sort order
-//                    );
-//
-//                    validateCursor("testInsertReadProvider. Error validating MovieEntry.",
-//                            cursorMovie, testMovieValues);
-//
-//                    testMovieValues.putAll(testMovieValues);
-//                    // End of inserting data into the movie table
 
 
                     //  Here is where you are inserting values into
-                    // the database using the content provider into the movie table
+                    // the database using the content provider into the trailer table
+                    ContentValues testTrailerValues = createTrailerValues(movie_id);
+
+                    TestContentObserver trailerTco = getTestContentObserver();
+                    getContext().getContentResolver().registerContentObserver(MovieContract.TrailerEntry.CONTENT_URI, true, trailerTco);
+
+                    Uri trailerUri = getContext().getContentResolver().insert(MovieContract.TrailerEntry.CONTENT_URI, testTrailerValues);
+
+                    trailerTco.waitForNotificationOrFail();
+                    getContext().getContentResolver().unregisterContentObserver(trailerTco);
+
+                    long trailerRowId = ContentUris.parseId(trailerUri);
+
+                    assertTrue(trailerRowId != -1);
+
+                    //  Here is where you are inserting values into
+                    // the database using the content provider into the favorite table
                     ContentValues testFavoriteValues = createFavoriteValues(movie_id);
 
                     TestContentObserver favoriteTco = getTestContentObserver();
@@ -231,19 +220,6 @@ public class DetailFragment extends Fragment {
                     long favoriteRowId = ContentUris.parseId(favoriteUri);
 
                     assertTrue(favoriteRowId != -1);
-//TODO:  Figure out why this won't validate
-//                    Cursor cursorFavorite = getContext().getContentResolver().query(
-//                            MovieContract.FavoriteEntry.CONTENT_URI,
-//                            null, // leaving "columns" null just returns all the columns.
-//                            null, // cols for "where" clause
-//                            null, // values for "where" clause
-//                            null  // sort order
-//                    );
-//
-//                    validateCursor("testInsertReadProvider. Error validating FavoriteEntry.",
-//                            cursorFavorite, testFavoriteValues);
-//
-//                    testFavoriteValues.putAll(testFavoriteValues);
 
 
                     star.setImageResource(android.R.drawable.star_big_on);
@@ -271,29 +247,58 @@ public class DetailFragment extends Fragment {
     static ContentValues createMovieValues(String title, String imagePath, String overview, String release,
                                            String rating, String movie_id) {
 
-        ContentValues testMovieValues = new ContentValues();
-        testMovieValues.put(MovieContract.MovieEntry.COLUMN_TITLE, title);
-        testMovieValues.put(MovieContract.MovieEntry.COLUMN_IMAGE_PATH, imagePath);
-        testMovieValues.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, overview);
-        testMovieValues.put(MovieContract.MovieEntry.COLUMN_RELEASE, release);
-        testMovieValues.put(MovieContract.MovieEntry.COLUMN_RATING, rating);
-        testMovieValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, movie_id);
+        ContentValues movieValues = new ContentValues();
+        movieValues.put(MovieContract.MovieEntry.COLUMN_TITLE, title);
+        movieValues.put(MovieContract.MovieEntry.COLUMN_IMAGE_PATH, imagePath);
+        movieValues.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, overview);
+        movieValues.put(MovieContract.MovieEntry.COLUMN_RELEASE, release);
+        movieValues.put(MovieContract.MovieEntry.COLUMN_RATING, rating);
+        movieValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, movie_id);
 
-        return testMovieValues;
+        return movieValues;
     }
-//TODO:  Uncomment this when you are ready to insert values into the trailer table
-//    static ContentValues createTrailerValues(String movie_id, String trailerKey) {
-//
-//        ContentValues testTrailerValues = new ContentValues();
-//
-//        testTrailerValues.put(MovieContract.TrailerEntry.COLUMN_MOVIE_ID, movie_id);
-//        testTrailerValues.put(MovieContract.TrailerEntry.COLUMN_TRAILER_KEY, trailerKey);
-//
-//
-//        return testTrailerValues;
-//    }
+
+    ContentValues createTrailerValues(String movie_id) {
+
+        if (trailerLVAdapter.getCount() >= 1) {
+
+            //Each trailer?
+            TrailerResponse.ResultsEntity item = (TrailerResponse.ResultsEntity) trailerLVAdapter.getItem(0);
+            trailerURL = "https://www.youtube.com/watch?v=" + item.getKey();
+
+        } else {
+            trailerURL = "No Trailer Available";
+        }
+
+        ContentValues testTrailerValues = new ContentValues();
+
+        testTrailerValues.put(MovieContract.TrailerEntry.COLUMN_MOVIE_ID, movie_id);
+        testTrailerValues.put(MovieContract.TrailerEntry.COLUMN_TRAILER_KEY,
+                trailerURL);
+
+        return testTrailerValues;
+    }
 
     //TODO:  Create createReviewValues here
+
+
+//        static ContentValues createReviewValues() {
+//
+//
+//
+//        ContentValues testReviewValues = new ContentValues();
+//
+//        testReviewValues.put(MovieContract.ReviewEntry.COLUMN_MOVIE_ID, "385497");
+//        testReviewValues.put(MovieContract.ReviewEntry.COLUMN_AUTHOR, "Christopher Paris");
+//        testReviewValues.put(MovieContract.ReviewEntry.COLUMN_REVIEW, "This is one of my favorite films ever." +
+//        "It has everything a proper James Bond film should have.  Right from the very beginning" +
+//                "people are being chased and shot at in an adrenaline filled intro." +
+//                "Bond song is best in history of bond movies.  Love it and highly recommend it to anybody that" +
+//                "has not had the pleasure.");
+//
+//
+//        return testReviewValues;
+//    }
 
     /**
      * @param movie_id movie id assigned by the movies database TMDB
@@ -301,25 +306,22 @@ public class DetailFragment extends Fragment {
      */
     static ContentValues createFavoriteValues(String movie_id) {
 
-        ContentValues testFavoriteValues = new ContentValues();
-        testFavoriteValues.put(MovieContract.FavoriteEntry.COLUMN_MOVIE_ID, movie_id);
+        ContentValues favoriteValues = new ContentValues();
+        favoriteValues.put(MovieContract.FavoriteEntry.COLUMN_MOVIE_ID, movie_id);
 
-        return testFavoriteValues;
+        return favoriteValues;
     }
 
     /**
-     * This only gets the first trailer I don't think I really need this
+     * This gets the current position and builds the URL for the youtube trailer
      */
-    public void getFirstTrailer() {
+    public void getTrailerAtPosition(int position) {
 
-
-        if (adapter.getCount() >= 1) {
-
+        if (trailerLVAdapter.getCount() >= 1) {
 
             //Each trailer?
-            TrailerResponse.ResultsEntity item = (TrailerResponse.ResultsEntity) adapter.getItem(0);
+            TrailerResponse.ResultsEntity item = (TrailerResponse.ResultsEntity) trailerLVAdapter.getItem(position);
             trailerURL = "https://www.youtube.com/watch?v=" + item.getKey();
-
 
         } else {
             trailerURL = "No Trailer Available";
@@ -327,23 +329,23 @@ public class DetailFragment extends Fragment {
 
     }
 
-    //TODO:  Call this when you are ready to get the trailers
-    public void getTrailers() {
-
-
-        for (int i = 0; i < adapter.getCount(); i++) {
-
-            TrailerResponse.ResultsEntity item = (TrailerResponse.ResultsEntity) adapter.getItem(i);
-            trailerURL = "https://www.youtube.com/watch?v=" + item.getKey();
-        }
-
-    }
+    //TODO:  Decide if you are going to use the get all trailers method
+//    public void getTrailers() {
+//
+//
+//        for (int i = 0; i < trailerLVAdapter.getCount(); i++) {
+//
+//            TrailerResponse.ResultsEntity item = (TrailerResponse.ResultsEntity) trailerLVAdapter.getItem(i);
+//            trailerURL = "https://www.youtube.com/watch?v=" + item.getKey();
+//        }
+//
+//    }
 
     //TODO:  Call this when you are ready to get the reviews
     public void getReviews() {
 
-        for (int i = 0; i < adapter.getCount(); i++) {
-            ReviewResponse.ResultsEntity item = (ReviewResponse.ResultsEntity) adapter.getItem(i);
+        for (int i = 0; i < trailerLVAdapter.getCount(); i++) {
+            ReviewResponse.ResultsEntity item = (ReviewResponse.ResultsEntity) trailerLVAdapter.getItem(i);
             reviewURL = item.getContent();
 
         }
@@ -369,23 +371,22 @@ public class DetailFragment extends Fragment {
 
     //  This method deletes a favorite movie
     //  Deletes data from all four tables
-    //TODO:  Modify this to include the remaining two tables trailer and review
+    //TODO:  Modify this to include the remaining table review
 
     /**
      * @param movie_id takes in a movie_id to delete all data from all tables if it's a favorite
      */
     public void deleteFavoriteMovie(String movie_id) {
 
-
         //  This is the where clause that looks for the movie_id in the movie_id column
         String movieWhereClause = MovieContract.MovieEntry.COLUMN_MOVIE_ID + "=" + movie_id;
+
         //  This is getting the content resolver to delete from the movie table
         getContext().getContentResolver().delete(
                 MovieContract.MovieEntry.CONTENT_URI,
                 movieWhereClause,
                 null
         );
-
         Cursor movieCursor = getContext().getContentResolver().query(
                 MovieContract.MovieEntry.CONTENT_URI,
                 null,
@@ -396,7 +397,26 @@ public class DetailFragment extends Fragment {
         assertEquals("Error: Records not deleted from Favorite table during delete", movieCursor.getCount(), movieCursor.getCount());
         movieCursor.close();
 
-        //TODO:  Add the other two tables right inbetween the movieWhereClause and the favoriteWhereClause
+        //TODO:  Add the last table right inbetween the movieCursor.close() and the trailerWhereClause
+
+        //  This is the where clause that looks for the movie_id in the movie_id column
+        String trailerWhereClause = MovieContract.TrailerEntry.COLUMN_MOVIE_ID + "=" + movie_id;
+
+        //  This is getting the content resolver to delete from the movie table
+        getContext().getContentResolver().delete(
+                MovieContract.TrailerEntry.CONTENT_URI,
+                trailerWhereClause,
+                null
+        );
+        Cursor trailerCursor = getContext().getContentResolver().query(
+                MovieContract.TrailerEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+        assertEquals("Error: Records not deleted from Favorite table during delete", trailerCursor.getCount(), trailerCursor.getCount());
+        trailerCursor.close();
 
 
         String favoriteWhereClause = MovieContract.FavoriteEntry.COLUMN_MOVIE_ID + "=" + movie_id;
@@ -476,8 +496,8 @@ public class DetailFragment extends Fragment {
                 trailerResponseStr = new String(responseBody);
                 gson = new Gson();
                 videoResponseObj = gson.fromJson(trailerResponseStr, TrailerResponse.class);
-                adapter = new TrailerLVAdapter(getActivity(), videoResponseObj.getResults());
-                trailerListView.setAdapter(adapter);
+                trailerLVAdapter = new TrailerLVAdapter(getActivity(), videoResponseObj.getResults());
+                trailerListView.setAdapter(trailerLVAdapter);
 
             }
 
