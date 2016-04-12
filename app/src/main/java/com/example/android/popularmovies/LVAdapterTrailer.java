@@ -11,15 +11,15 @@ import android.widget.TextView;
 import java.util.List;
 
 
-public class TrailerLVAdapter extends BaseAdapter {
+public class LVAdapterTrailer extends BaseAdapter {
 
     private LayoutInflater mInflater;
-    private List<TrailerResponse.ResultsEntity> mPosts;
+    private List<ResponseTrailer.ResultsEntity> mPosts;
 
     private Context mContext;
 
 
-    public TrailerLVAdapter(Context mContext, List<TrailerResponse.ResultsEntity> mMovieitem) {
+    public LVAdapterTrailer(Context mContext, List<ResponseTrailer.ResultsEntity> mMovieitem) {
         this.mContext = mContext;
         this.mPosts = mMovieitem;
     }
@@ -52,7 +52,7 @@ public class TrailerLVAdapter extends BaseAdapter {
         LayoutInflater inflater = (LayoutInflater) mContext
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(R.layout.trailer_list_item, parent, false);
-        TrailerResponse.ResultsEntity item = (TrailerResponse.ResultsEntity) getItem(position);
+        ResponseTrailer.ResultsEntity item = (ResponseTrailer.ResultsEntity) getItem(position);
 
         ImageView thumbnail = (ImageView) rowView.findViewById(R.id.play_thumbnail);
 

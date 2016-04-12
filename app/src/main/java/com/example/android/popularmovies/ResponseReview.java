@@ -3,7 +3,7 @@ package com.example.android.popularmovies;
 import java.util.List;
 
 
-public class ReviewResponse {
+public class ResponseReview {
 
 
     /**

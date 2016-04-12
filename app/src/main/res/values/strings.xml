@@ -42,4 +42,10 @@
 
     <string name="pref_sort_asc" translatable="false">.asc</string>
 
+    <string name="pref_access_online" translatable="false">Online</string>
+
+    <string name="pref_access_favorites" translatable="false">Favorites</string>
+
+    <string name="pref_access_key" translatable="false">Online</string>
+
 </resources>

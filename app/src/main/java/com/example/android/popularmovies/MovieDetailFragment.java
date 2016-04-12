@@ -42,17 +42,17 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 
-public class DetailFragment extends Fragment {
+public class MovieDetailFragment extends Fragment {
 
-    public DetailFragment() {
+    public MovieDetailFragment() {
     }
 
     Boolean flag = false;
-    TrailerResponse videoResponseObj;
-    ReviewResponse reviewResponseObj;
+    ResponseTrailer videoResponseObj;
+    ResponseReview reviewResponseObj;
     Gson gson;
     AsyncHttpClient client;
-    TrailerLVAdapter trailerLVAdapter;
+    LVAdapterTrailer trailerLVAdapter;
     ListView trailerListView;
     ListView reviewListView;
     String trailerURL;
@@ -174,6 +174,8 @@ public class DetailFragment extends Fragment {
                     ContentValues testMovieValues = createMovieValues(movie_title, movie_thumbnail, movie_overview, movie_releasedate,
                             movie_rating, movie_id);
 
+                    Log.d("MovieDetailFragment", movie_thumbnail);
+
                     TestContentObserver movieTco = getTestContentObserver();
                     getContext().getContentResolver().registerContentObserver(MovieContract.MovieEntry.CONTENT_URI, true, movieTco);
 
@@ -263,7 +265,7 @@ public class DetailFragment extends Fragment {
         if (trailerLVAdapter.getCount() >= 1) {
 
             //Each trailer?
-            TrailerResponse.ResultsEntity item = (TrailerResponse.ResultsEntity) trailerLVAdapter.getItem(0);
+            ResponseTrailer.ResultsEntity item = (ResponseTrailer.ResultsEntity) trailerLVAdapter.getItem(0);
             trailerURL = "https://www.youtube.com/watch?v=" + item.getKey();
 
         } else {
@@ -320,7 +322,7 @@ public class DetailFragment extends Fragment {
         if (trailerLVAdapter.getCount() >= 1) {
 
             //Each trailer?
-            TrailerResponse.ResultsEntity item = (TrailerResponse.ResultsEntity) trailerLVAdapter.getItem(position);
+            ResponseTrailer.ResultsEntity item = (ResponseTrailer.ResultsEntity) trailerLVAdapter.getItem(position);
             trailerURL = "https://www.youtube.com/watch?v=" + item.getKey();
 
         } else {
@@ -345,7 +347,7 @@ public class DetailFragment extends Fragment {
     public void getReviews() {
 
         for (int i = 0; i < trailerLVAdapter.getCount(); i++) {
-            ReviewResponse.ResultsEntity item = (ReviewResponse.ResultsEntity) trailerLVAdapter.getItem(i);
+            ResponseReview.ResultsEntity item = (ResponseReview.ResultsEntity) trailerLVAdapter.getItem(i);
             reviewURL = item.getContent();
 
         }
@@ -495,8 +497,8 @@ public class DetailFragment extends Fragment {
 
                 trailerResponseStr = new String(responseBody);
                 gson = new Gson();
-                videoResponseObj = gson.fromJson(trailerResponseStr, TrailerResponse.class);
-                trailerLVAdapter = new TrailerLVAdapter(getActivity(), videoResponseObj.getResults());
+                videoResponseObj = gson.fromJson(trailerResponseStr, ResponseTrailer.class);
+                trailerLVAdapter = new LVAdapterTrailer(getActivity(), videoResponseObj.getResults());
                 trailerListView.setAdapter(trailerLVAdapter);
 
             }
@@ -521,10 +523,9 @@ public class DetailFragment extends Fragment {
 
                 reviewResponseStr = new String(responseBody);
                 gson = new Gson();
-                reviewResponseObj = gson.fromJson(reviewResponseStr, ReviewResponse.class);
+                reviewResponseObj = gson.fromJson(reviewResponseStr, ResponseReview.class);
                 reviewResponseObj.getResults();
 
-                Log.d("LOG TAG", reviewResponseObj.toString());
 
 
             }

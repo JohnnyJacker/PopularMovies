@@ -18,4 +18,10 @@
             android:entryValues="@array/pref_sort_order_values"
             android:entries="@array/pref_sort_order_options" />
 
+    <ListPreference
+        android:title="Access"
+        android:key="@string/pref_access_key"
+        android:entryValues="@array/pref_access_values"
+        android:entries="@array/pref_access"/>
+
 </PreferenceScreen>

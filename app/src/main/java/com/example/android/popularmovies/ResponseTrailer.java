@@ -4,7 +4,7 @@ package com.example.android.popularmovies;
 import java.util.List;
 
 
-public class TrailerResponse {
+public class ResponseTrailer {
 
 
     /**

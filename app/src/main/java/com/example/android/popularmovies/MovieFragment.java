@@ -6,11 +6,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.CompoundButton;
 import android.widget.GridView;
+import android.widget.Switch;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
@@ -19,18 +24,19 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import cz.msebera.android.httpclient.Header;
 
 
-public class MoviesFragment extends Fragment {
+public class MovieFragment extends Fragment {
 
 
-    public MoviesFragment() {
+    public MovieFragment() {
     }
 
 
     GridView gridview;
-    MovieResponse responseObj;
-    MoviesGVAdapter adapter;
+    ResponseMovie responseObj;
+    GVAdapterMovie adapter;
     Gson gson;
     AsyncHttpClient client;
+    ToggleButton favoriteToggle;
 
 
     @Override
@@ -39,6 +45,28 @@ public class MoviesFragment extends Fragment {
 
 // All this method does to update the movies is call parseJson();
         updateMovies();
+
+
+//        Switch favoriteToggle = (Switch) getActivity().findViewById(R.id.favorite_toggle);
+//        favoriteToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//
+//                if (isChecked) {
+//                    Toast.makeText(getContext(), "ON", Toast.LENGTH_LONG).show();
+//                } else {
+//                    Toast.makeText(getContext(), "OFF", Toast.LENGTH_LONG).show();
+//                }
+//            }
+//        });
+
+//        favoriteToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//
+//            }
+//        });
+
 
 // The layout to inflate
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
@@ -53,7 +81,7 @@ public class MoviesFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
 
-                MovieResponse.movieEntity item = (MovieResponse.movieEntity) adapter.getItem(position);
+                ResponseMovie.movieEntity item = (ResponseMovie.movieEntity) adapter.getItem(position);
 
                 String movieTitle = item.getTitle();
                 String movieThumbnail = item.getPoster_path();
@@ -61,6 +89,8 @@ public class MoviesFragment extends Fragment {
                 String movieReleaseDate = item.getRelease_date();
                 String movieRating = item.getVote_average();
                 String movieId = item.getId();
+
+                Log.d("MovieFragment", movieThumbnail);
 
 
                 Intent i = new Intent(getActivity(), MovieDetail.class);
@@ -74,6 +104,8 @@ public class MoviesFragment extends Fragment {
 
             }
         });
+
+
 
 
         return rootView;
@@ -136,8 +168,8 @@ public class MoviesFragment extends Fragment {
 
                 String responseStr = new String(responseBody);
                 gson = new Gson();
-                responseObj = gson.fromJson(responseStr, MovieResponse.class);
-                adapter = new MoviesGVAdapter(getActivity(), responseObj.getResults());
+                responseObj = gson.fromJson(responseStr, ResponseMovie.class);
+                adapter = new GVAdapterMovie(getActivity(), responseObj.getResults());
                 gridview.setAdapter(adapter);
             }
 

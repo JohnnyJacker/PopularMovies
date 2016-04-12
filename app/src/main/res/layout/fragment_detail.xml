@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF"
     android:weightSum="1"
-    tools:context=".DetailFragment"
+    tools:context=".MovieDetailFragment"
     tools:showIn="@layout/activity_detail">
 
     <LinearLayout

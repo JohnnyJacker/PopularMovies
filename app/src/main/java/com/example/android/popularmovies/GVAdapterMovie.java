@@ -14,15 +14,15 @@ import java.util.List;
 /**
  * Created by T510 Owner on 1/16/2016.
  */
-public class MoviesGVAdapter extends BaseAdapter {
+public class GVAdapterMovie extends BaseAdapter {
 
 
-    private List<MovieResponse.movieEntity> mMovieitem;
+    private List<ResponseMovie.movieEntity> mMovieitem;
     private Context mContext;
-    private LayoutInflater inflater;
 
 
-    public MoviesGVAdapter(Context mContext, List<MovieResponse.movieEntity> mMovieitem) {
+
+    public GVAdapterMovie(Context mContext, List<ResponseMovie.movieEntity> mMovieitem) {
         this.mContext = mContext;
         this.mMovieitem = mMovieitem;
     }
@@ -49,11 +49,11 @@ public class MoviesGVAdapter extends BaseAdapter {
         LayoutInflater inflater = (LayoutInflater) mContext
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(R.layout.movie_item, parent, false);
-        MovieResponse.movieEntity item = (MovieResponse.movieEntity) getItem(position);
+        ResponseMovie.movieEntity item = (ResponseMovie.movieEntity) getItem(position);
 
         ImageView thumbnail = (ImageView) rowView.findViewById(R.id.movie_image);
 
-        String imageUrl = item.getPoster_path();
+        String imageUrl = item.getPoster_pathBuilt();
 
         Picasso.with(mContext)
                 .load(imageUrl)

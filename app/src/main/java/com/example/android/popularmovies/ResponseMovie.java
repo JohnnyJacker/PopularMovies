@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by T510 Owner on 1/16/2016.
  */
-public class MovieResponse {
+public class ResponseMovie {
 
 
     /**
@@ -144,7 +144,12 @@ public class MovieResponse {
 
         public String getPoster_path() {
 
-            poster_path = "http://image.tmdb.org/t/p/w185" + poster_path;
+//            poster_path = "http://image.tmdb.org/t/p/w185" + poster_path;
+            return poster_path;
+        }
+
+        public String getPoster_pathBuilt(){
+                        poster_path = "http://image.tmdb.org/t/p/w185" + poster_path;
             return poster_path;
         }
 
