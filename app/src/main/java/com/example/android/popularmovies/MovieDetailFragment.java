@@ -29,8 +29,6 @@ import com.squareup.picasso.Picasso;
 
 import junit.framework.Assert;
 
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import butterknife.Bind;
@@ -38,7 +36,6 @@ import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 
@@ -46,6 +43,17 @@ public class MovieDetailFragment extends Fragment {
 
     public MovieDetailFragment() {
     }
+
+    public void putArgs(Bundle bundle) {
+        this.extras = bundle;
+    };
+
+    public static MovieDetailFragment newInstance(Intent intent){
+        MovieDetailFragment movieDetailFragment = new MovieDetailFragment();
+        movieDetailFragment.putArgs(intent.getExtras());
+        return movieDetailFragment;
+    };
+
 
     Boolean flag = false;
     ResponseTrailer videoResponseObj;
@@ -58,6 +66,7 @@ public class MovieDetailFragment extends Fragment {
     String trailerURL;
     String reviewURL;
     String movie_id;
+    Bundle extras = null;
 
     String trailerResponseStr;
     String reviewResponseStr;
@@ -109,129 +118,146 @@ public class MovieDetailFragment extends Fragment {
 
         ButterKnife.bind(this, rootview);
 
-
-        final String movie_title = getActivity().getIntent().getExtras().getString("movie_title");
-        final String movie_overview = getActivity().getIntent().getExtras().getString("movie_overview");
-        final String movie_releasedate = getActivity().getIntent().getExtras().getString("movie_releasedate");
-        final String movie_rating = getActivity().getIntent().getExtras().getString("movie_rating");
-        final String movie_thumbnail = getActivity().getIntent().getExtras().getString("movie_thumbnail");
-
-
-        //  Setting the text for the movie title from the passed in values from MoviesFragment
-        mTitle.setText(movie_title);
-
-        mOverview.setText(movie_overview);
-
-        mRelease.setText(movie_releasedate);
-
-        mRating.setText(movie_rating + "/10");
-
-        Picasso.with(mContext)
-                .load(movie_thumbnail)
-                .resize(185, 256)
-                .centerInside()
-                .placeholder(R.drawable.noimage)
-                .into(mThumbnail);
-
-        movie_id = getActivity().getIntent().getExtras().getString("movie_id");
-
-        final ImageView star = (ImageView) rootview.findViewById(R.id.imageButton);
-
-        //  Flag is set to false initially
-        //  If the movie id returns false the image is off and the flag gets set to true
-        if (flag == checkForMovie(movie_id)) {
-            star.setImageResource(android.R.drawable.star_big_off);
-            flag = true;
-            //  If the movie id returns true then the star is on and the flag is again set to false.
-        } else {
-            star.setImageResource(android.R.drawable.star_big_on);
-            flag = false;
+        if (extras == null) {
+            extras = getActivity().getIntent().getExtras();
         }
 
-        /**
-         * On click listener for the favorite star
-         */
-        star.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            final String movie_title = extras.getString("movie_title");
+            final String movie_overview = extras.getString("movie_overview");
+            final String movie_releasedate = extras.getString("movie_releasedate");
+            final String movie_rating = extras.getString("movie_rating");
+            final String movie_thumbnail = extras.getString("movie_thumbnail");
 
 
-                deleteFavoriteMovie(movie_id);
+            //  Setting the text for the movie title from the passed in values from MoviesFragment
+            mTitle.setText(movie_title);
 
-                if (flag == checkForMovie(movie_id)) {
+            mOverview.setText(movie_overview);
 
+            mRelease.setText(movie_releasedate);
 
-                    star.setImageResource(android.R.drawable.star_big_off);
-                    Toast.makeText(getActivity(), "Unmarked as Favorite", Toast.LENGTH_LONG).show();
+            mRating.setText(movie_rating + "/10");
 
+            Picasso.with(getContext())
+                    .load(movie_thumbnail)
+                    .resize(185, 256)
+                    .centerInside()
+                    .placeholder(R.drawable.noimage)
+                    .into(mThumbnail);
 
-                    flag = true;
+            movie_id = extras.getString("movie_id");
 
-                } else {
+            final ImageView star = (ImageView) rootview.findViewById(R.id.imageButton);
 
-                    //  Here is where you are inserting values into
-                    // the database using the content provider into the movie table
-                    ContentValues testMovieValues = createMovieValues(movie_title, movie_thumbnail, movie_overview, movie_releasedate,
-                            movie_rating, movie_id);
-
-                    Log.d("MovieDetailFragment", movie_thumbnail);
-
-                    TestContentObserver movieTco = getTestContentObserver();
-                    getContext().getContentResolver().registerContentObserver(MovieContract.MovieEntry.CONTENT_URI, true, movieTco);
-
-
-                    Uri movieUri = getContext().getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, testMovieValues);
-
-                    movieTco.waitForNotificationOrFail();
-                    getContext().getContentResolver().unregisterContentObserver(movieTco);
-
-                    long movieRowId = ContentUris.parseId(movieUri);
-
-                    assertTrue(movieRowId != -1);
-
-
-                    //  Here is where you are inserting values into
-                    // the database using the content provider into the trailer table
-                    ContentValues testTrailerValues = createTrailerValues(movie_id);
-
-                    TestContentObserver trailerTco = getTestContentObserver();
-                    getContext().getContentResolver().registerContentObserver(MovieContract.TrailerEntry.CONTENT_URI, true, trailerTco);
-
-                    Uri trailerUri = getContext().getContentResolver().insert(MovieContract.TrailerEntry.CONTENT_URI, testTrailerValues);
-
-                    trailerTco.waitForNotificationOrFail();
-                    getContext().getContentResolver().unregisterContentObserver(trailerTco);
-
-                    long trailerRowId = ContentUris.parseId(trailerUri);
-
-                    assertTrue(trailerRowId != -1);
-
-                    //  Here is where you are inserting values into
-                    // the database using the content provider into the favorite table
-                    ContentValues testFavoriteValues = createFavoriteValues(movie_id);
-
-                    TestContentObserver favoriteTco = getTestContentObserver();
-                    getContext().getContentResolver().registerContentObserver(MovieContract.FavoriteEntry.CONTENT_URI, true, favoriteTco);
-
-
-                    Uri favoriteUri = getContext().getContentResolver().insert(MovieContract.FavoriteEntry.CONTENT_URI, testFavoriteValues);
-
-                    favoriteTco.waitForNotificationOrFail();
-                    getContext().getContentResolver().unregisterContentObserver(favoriteTco);
-
-                    long favoriteRowId = ContentUris.parseId(favoriteUri);
-
-                    assertTrue(favoriteRowId != -1);
-
-
-                    star.setImageResource(android.R.drawable.star_big_on);
-                    Toast.makeText(getActivity(), "Marked as Favorite", Toast.LENGTH_LONG).show();
-
-                    flag = false;
-
-                }
+            //  Flag is set to false initially
+            //  If the movie id returns false the image is off and the flag gets set to true
+            if (flag == checkForMovie(movie_id)) {
+                star.setImageResource(android.R.drawable.star_big_off);
+                flag = true;
+                //  If the movie id returns true then the star is on and the flag is again set to false.
+            } else {
+                star.setImageResource(android.R.drawable.star_big_on);
+                flag = false;
             }
-        });
+
+
+
+
+
+
+            /**
+             * On click listener for the favorite star
+             */
+            star.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+
+                    deleteFavoriteMovie(movie_id);
+
+                    if (flag == checkForMovie(movie_id)) {
+
+
+                        star.setImageResource(android.R.drawable.star_big_off);
+                        Toast.makeText(getActivity(), "Unmarked as Favorite", Toast.LENGTH_LONG).show();
+
+
+                        flag = true;
+
+                    } else {
+
+                        //  Here is where you are inserting values into
+                        // the database using the content provider into the movie table
+                        ContentValues testMovieValues = createMovieValues(movie_title, movie_thumbnail, movie_overview, movie_releasedate,
+                                movie_rating, movie_id);
+
+                        Log.d("MovieDetailFragment", movie_thumbnail);
+
+                        TestContentObserver movieTco = getTestContentObserver();
+                        getContext().getContentResolver().registerContentObserver(MovieContract.MovieEntry.CONTENT_URI, true, movieTco);
+
+
+                        Uri movieUri = getContext().getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, testMovieValues);
+
+                        movieTco.waitForNotificationOrFail();
+                        getContext().getContentResolver().unregisterContentObserver(movieTco);
+
+                        long movieRowId = ContentUris.parseId(movieUri);
+
+                        assertTrue(movieRowId != -1);
+
+
+                        //  Here is where you are inserting values into
+                        // the database using the content provider into the trailer table
+                        ContentValues testTrailerValues = createTrailerValues(movie_id);
+
+                        TestContentObserver trailerTco = getTestContentObserver();
+                        getContext().getContentResolver().registerContentObserver(MovieContract.TrailerEntry.CONTENT_URI, true, trailerTco);
+
+                        Uri trailerUri = getContext().getContentResolver().insert(MovieContract.TrailerEntry.CONTENT_URI, testTrailerValues);
+
+                        trailerTco.waitForNotificationOrFail();
+                        getContext().getContentResolver().unregisterContentObserver(trailerTco);
+
+                        long trailerRowId = ContentUris.parseId(trailerUri);
+
+                        assertTrue(trailerRowId != -1);
+
+                        //  Here is where you are inserting values into
+                        // the database using the content provider into the favorite table
+                        ContentValues testFavoriteValues = createFavoriteValues(movie_id);
+
+                        TestContentObserver favoriteTco = getTestContentObserver();
+                        getContext().getContentResolver().registerContentObserver(MovieContract.FavoriteEntry.CONTENT_URI, true, favoriteTco);
+
+
+                        Uri favoriteUri = getContext().getContentResolver().insert(MovieContract.FavoriteEntry.CONTENT_URI, testFavoriteValues);
+
+                        favoriteTco.waitForNotificationOrFail();
+                        getContext().getContentResolver().unregisterContentObserver(favoriteTco);
+
+                        long favoriteRowId = ContentUris.parseId(favoriteUri);
+
+                        assertTrue(favoriteRowId != -1);
+
+
+                        star.setImageResource(android.R.drawable.star_big_on);
+                        Toast.makeText(getActivity(), "Marked as Favorite", Toast.LENGTH_LONG).show();
+
+                        flag = false;
+
+                    }
+                }
+            });
+
+
+
+
+
+
+//        String reviewString = getReviews();
+//        TextView reviewTextView = (TextView) getActivity().findViewById(R.id.review_list_view);
+//        reviewTextView.setText(reviewString);
 
 
         return rootview;
@@ -331,26 +357,17 @@ public class MovieDetailFragment extends Fragment {
 
     }
 
-    //TODO:  Decide if you are going to use the get all trailers method
-//    public void getTrailers() {
-//
-//
-//        for (int i = 0; i < trailerLVAdapter.getCount(); i++) {
-//
-//            TrailerResponse.ResultsEntity item = (TrailerResponse.ResultsEntity) trailerLVAdapter.getItem(i);
-//            trailerURL = "https://www.youtube.com/watch?v=" + item.getKey();
-//        }
-//
-//    }
 
     //TODO:  Call this when you are ready to get the reviews
-    public void getReviews() {
+    public String getReviews() {
 
         for (int i = 0; i < trailerLVAdapter.getCount(); i++) {
             ResponseReview.ResultsEntity item = (ResponseReview.ResultsEntity) trailerLVAdapter.getItem(i);
             reviewURL = item.getContent();
 
+
         }
+        return reviewURL;
     }
 
     @Override
@@ -448,10 +465,13 @@ public class MovieDetailFragment extends Fragment {
      */
     public String builtTrailerURL() {
 
+
+
         String MOVIE_BASE_URL =
                 "http://api.themoviedb.org/3/movie/";
 
-        movie_id = getActivity().getIntent().getExtras().getString("movie_id");
+
+        movie_id = extras.getString("movie_id");
 
 //        String movie_id = "281957";
 
@@ -525,7 +545,6 @@ public class MovieDetailFragment extends Fragment {
                 gson = new Gson();
                 reviewResponseObj = gson.fromJson(reviewResponseStr, ResponseReview.class);
                 reviewResponseObj.getResults();
-
 
 
             }
@@ -666,36 +685,5 @@ public class MovieDetailFragment extends Fragment {
     }
 
 
-    /**
-     * @param error          Takes in an error message
-     * @param valueCursor    Takes in the value of the cursor
-     * @param expectedValues Takes in the expected values
-     */
-    //TODO:  This is not working for some reason you need to figure this out!
-    static void validateCursor(String error, Cursor valueCursor, ContentValues expectedValues) {
-        assertTrue("Empty cursor returned. " + error, valueCursor.moveToFirst());
-        validateCurrentRecord(error, valueCursor, expectedValues);
-        valueCursor.close();
-    }
-
-    /**
-     * @param error          Takes in an error message
-     * @param valueCursor    Takes in the value of the cursor
-     * @param expectedValues Takes in the expected values
-     */
-    static void validateCurrentRecord(String error, Cursor valueCursor, ContentValues expectedValues) {
-        Set<Map.Entry<String, Object>> valueSet = expectedValues.valueSet();
-        for (Map.Entry<String, Object> entry : valueSet) {
-            String columnName = entry.getKey();
-            int idx = valueCursor.getColumnIndex(columnName);
-            assertFalse("Column '" + columnName + "' not found. " + error, idx == -1);
-            String expectedValue = entry.getValue().toString();
-            assertEquals("Value '" + entry.getValue().toString() +
-                    "' did not match the expected value '" +
-                    expectedValue + "'. " + error, expectedValue, valueCursor.getString(idx));
-        }
-
-
-    }
 }
 

@@ -1,5 +1,6 @@
 package com.example.android.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -11,10 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.CompoundButton;
 import android.widget.GridView;
-import android.widget.Switch;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.gson.Gson;
@@ -25,6 +23,14 @@ import cz.msebera.android.httpclient.Header;
 
 
 public class MovieFragment extends Fragment {
+
+    //  Here is the member variable for the MovieInterface
+    private MovieInterface movieInterface;
+    //  This is the actual interface
+    public interface MovieInterface {
+        //  This is where we are declaring the name of the method to be used
+        void showMovieDetail(Intent intent);
+    }
 
 
     public MovieFragment() {
@@ -100,7 +106,10 @@ public class MovieFragment extends Fragment {
                 i.putExtra("movie_releasedate", String.valueOf(movieReleaseDate));
                 i.putExtra("movie_rating", String.valueOf(movieRating));
                 i.putExtra("movie_id", String.valueOf(movieId));
-                startActivity(i);
+//                startActivity(i);
+
+                movieInterface.showMovieDetail(i);
+
 
             }
         });
@@ -116,6 +125,7 @@ public class MovieFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        if (getActivity().getIntent().getExtras() == null) return;
         updateMovies();
     }
 
@@ -130,6 +140,19 @@ public class MovieFragment extends Fragment {
         parseJson();
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        //  If context has a MovieInterface
+        if (context instanceof MovieInterface) {
+            //  Set member variable to MovieInterface of the context
+            movieInterface = (MovieInterface) context;
+            //  This .showMovieDetail is defined in MainActivity
+
+        } else {
+            throw new Error("Needs to implement MovieInterface");
+        }
+    }
 
     // This method is used within the parseJson();
     // Passes the built URL in for GSON library
