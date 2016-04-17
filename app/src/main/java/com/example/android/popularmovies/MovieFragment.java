@@ -7,13 +7,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v7.widget.ShareActionProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ToggleButton;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
@@ -26,6 +25,8 @@ public class MovieFragment extends Fragment {
 
     //  Here is the member variable for the MovieInterface
     private MovieInterface movieInterface;
+    private ShareActionProvider mShareActionProvider;
+
     //  This is the actual interface
     public interface MovieInterface {
         //  This is where we are declaring the name of the method to be used
@@ -42,7 +43,6 @@ public class MovieFragment extends Fragment {
     GVAdapterMovie adapter;
     Gson gson;
     AsyncHttpClient client;
-    ToggleButton favoriteToggle;
 
 
     @Override
@@ -51,28 +51,6 @@ public class MovieFragment extends Fragment {
 
 // All this method does to update the movies is call parseJson();
         updateMovies();
-
-
-//        Switch favoriteToggle = (Switch) getActivity().findViewById(R.id.favorite_toggle);
-//        favoriteToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//
-//                if (isChecked) {
-//                    Toast.makeText(getContext(), "ON", Toast.LENGTH_LONG).show();
-//                } else {
-//                    Toast.makeText(getContext(), "OFF", Toast.LENGTH_LONG).show();
-//                }
-//            }
-//        });
-
-//        favoriteToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//
-//            }
-//        });
-
 
 // The layout to inflate
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
@@ -96,9 +74,6 @@ public class MovieFragment extends Fragment {
                 String movieRating = item.getVote_average();
                 String movieId = item.getId();
 
-                Log.d("MovieFragment", movieThumbnail);
-
-
                 Intent i = new Intent(getActivity(), MovieDetail.class);
                 i.putExtra("movie_title", String.valueOf(movieTitle));
                 i.putExtra("movie_thumbnail", String.valueOf(movieThumbnail));
@@ -106,15 +81,11 @@ public class MovieFragment extends Fragment {
                 i.putExtra("movie_releasedate", String.valueOf(movieReleaseDate));
                 i.putExtra("movie_rating", String.valueOf(movieRating));
                 i.putExtra("movie_id", String.valueOf(movieId));
-//                startActivity(i);
-
                 movieInterface.showMovieDetail(i);
 
 
             }
         });
-
-
 
 
         return rootView;
@@ -175,10 +146,8 @@ public class MovieFragment extends Fragment {
                 .appendQueryParameter(QUERY_PARAM, category + order)
                 .appendQueryParameter(APPID_PARAM, BuildConfig.THE_MOVIE_DB_API_KEY);
 
-        String url = builtUri.toString();
-
         // This is the built url for when the app calls on the server for the grid of movies
-        return url;
+        return builtUri.toString();
     }
 
 

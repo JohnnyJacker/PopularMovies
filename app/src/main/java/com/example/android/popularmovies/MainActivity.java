@@ -1,23 +1,21 @@
 package com.example.android.popularmovies;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.util.Objects;
+
 
 public class MainActivity extends AppCompatActivity implements MovieFragment.MovieInterface {
-
-
-    public static final String LOG_TAG = MainActivity.class.getSimpleName();
-
 
 
     public Toolbar toolbar;
@@ -32,23 +30,13 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Mov
 
         setContentView(R.layout.activity_main);
 
-        if (findViewById(R.id.detail_container) != null) {
-            mTwoPane = true;
 
-//            if (savedInstanceState == null) {
-//                getSupportFragmentManager().beginTransaction().replace(R.id.detail_container,
-//                        new MovieDetailFragment(), DETAILFRAGMENT_TAG).commit();
-//            }
-        } else {
-            mTwoPane = false;
-        }
+        mTwoPane = findViewById(R.id.detail_container) != null;
 
 
-        //toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         DecideLayout();
-
-
 
 
     }
@@ -76,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Mov
     }
 
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     public Boolean getPref(String string) {
 
 
@@ -83,15 +72,20 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Mov
         String favorites = getString(R.string.pref_access_favorites);
         boolean isItTrue = true;
 
-        if (string == online) {
+        if (Objects.equals(string, online)) {
             isItTrue = true;
         }
-        if (string == favorites) {
+        if (Objects.equals(string, favorites)) {
             isItTrue = false;
         }
         return isItTrue;
     }
 
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        DecideLayout();
+    }
 
     public void DecideLayout() {
 
@@ -102,15 +96,13 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Mov
         Toast.makeText(this, access, Toast.LENGTH_LONG).show();
 
 
-
-        if (getPref(access) == true) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new MovieFragment()).commit();
-            //toolbar.setTitle("The Movies Database");
+        if (getPref(access)) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new MovieFragment()).commitAllowingStateLoss();
+            toolbar.setTitle("The Movies Database");
         } else {
-
-
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new MovieFragmentFavorite()).commit();
-            //toolbar.setTitle("Favorites");
+            
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new MovieFragmentFavorite()).commitAllowingStateLoss();
+            toolbar.setTitle("Favorites");
         }
 
 
@@ -121,8 +113,11 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Mov
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        //  Return true to display menu
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -143,12 +138,13 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Mov
     @Override
     public void showMovieDetail(Intent intent) {
 
-        if (mTwoPane == true) {
+        if (mTwoPane) {
 
+            //  If we're in two pane mode start the new instance of MovieDetailFragment with the
+            // passed in Intent
             getSupportFragmentManager().beginTransaction().replace(R.id.detail_container,
                     MovieDetailFragment.newInstance(intent), DETAILFRAGMENT_TAG).commit();
 
-//            Toast.makeText(this, "Hey this is two pane mode!", Toast.LENGTH_LONG).show();
 
         } else {
 
@@ -156,7 +152,5 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Mov
         }
 
     }
-
-
 
 }

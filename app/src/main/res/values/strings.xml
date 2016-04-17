@@ -48,4 +48,13 @@
 
     <string name="pref_access_key" translatable="false">Online</string>
 
+    <string name="author_name">Author</string>
+    <string name="review_content">Content</string>
+
+    <string name="movie_overview">Overview</string>
+    <string name="movie_reviews">Reviews</string>
+    <string name="movie_title">Title</string>
+    <string name="movie_trailers">Trailers</string>
+
+
 </resources>

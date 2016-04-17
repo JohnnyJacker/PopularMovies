@@ -6,14 +6,12 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.android.popularmovies.data.MovieContract;
 
@@ -95,18 +93,9 @@ public class MovieFragmentFavorite extends Fragment {
                 i.putExtra("movie_releasedate", String.valueOf(movieRelease));
                 i.putExtra("movie_rating", String.valueOf(movieRating));
                 i.putExtra("movie_id", String.valueOf(movieMovieId));
-//                startActivity(i);
                 movieInterface.showMovieDetail(i);
 
-                Log.d(LOG_TAG, movieTitle);
-                Log.d(LOG_TAG, movieThumbnail);
-                Log.d(LOG_TAG, movieOverview);
-                Log.d(LOG_TAG, movieRelease);
-                Log.d(LOG_TAG, movieRating);
-                Log.d(LOG_TAG, movieMovieId);
-
-                Toast.makeText(getActivity(), movieTitle + "\n" + movieOverview +
-                        "\n" + movieRelease + "\n" + movieRating + "\n" + movieMovieId, Toast.LENGTH_LONG).show();
+                movieCursor.close();
 
 
             }

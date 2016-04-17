@@ -11,9 +11,6 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-/**
- * Created by T510 Owner on 1/16/2016.
- */
 public class GVAdapterMovie extends BaseAdapter {
 
 
