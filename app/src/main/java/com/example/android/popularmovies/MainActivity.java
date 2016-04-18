@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.Mov
             getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new MovieFragment()).commitAllowingStateLoss();
             toolbar.setTitle("The Movies Database");
         } else {
-            
+
             getSupportFragmentManager().beginTransaction().replace(R.id.main_container, new MovieFragmentFavorite()).commitAllowingStateLoss();
             toolbar.setTitle("Favorites");
         }
